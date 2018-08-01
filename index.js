@@ -26,7 +26,7 @@ app.use(session({
   //创建 session 即使未登录
   saveUninitialized: false,
   //过期时间
-  cookie:{
+  cookie: {
     maxAge: config.session.maxage
   },
   store: new MongoStore({
@@ -36,6 +36,24 @@ app.use(session({
 
 //flash 中间件
 app.use(flash())
+
+// 处理表单及文件上传的中间件
+app.use(require('express-formidable')({
+  uploadDir: path.join(__dirname, 'public/img'), // 上传文件目录
+  keepExtensions: true // 保留后缀
+}))
+
+app.locals.blog = {
+  title: pkg.name,
+  description: pkg.description
+}
+
+app.use(function (req, res, next){
+  res.locals.user = req.session.user
+  res.locals.success = req.flash('success').toString()
+  res.locals.error = req.flash('error').toString()
+  next()
+})
 
 routes(app)
 
